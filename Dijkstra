@@ -1,0 +1,70 @@
+/*Example:
+Input:
+1
+5 7
+1 2 5
+1 3 2
+2 3 4
+2 4 3
+3 4 6
+0 3 20
+0 4 10
+1
+Output:
+18 0 5 2 8
+ */
+
+#include <iostream>
+#include <queue>
+#include <vector>
+
+constexpr int kMaxn = 60000;
+constexpr int kInf = 2009000999;
+
+std::vector<int> used;
+std::vector<std::pair<int, int>> path_matrix[kMaxn];  // матрица путей
+int minimum_path[kMaxn] = {0};  // минимальное расстояние
+std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> min_queue;
+
+void Dijkstra(int room_number) {
+  std::fill(minimum_path, minimum_path + kMaxn, kInf);
+  minimum_path[room_number] = 0;
+  min_queue.push(std::make_pair(minimum_path[room_number], room_number));
+  while (!min_queue.empty()) {
+    int vertex = min_queue.top().second;
+    min_queue.pop();
+    if (used[vertex] == 1) { continue; }
+    used[vertex] = 1;
+    for (auto& to : path_matrix[vertex]) {
+      if (minimum_path[to.first] > minimum_path[vertex] + to.second) {
+        minimum_path[to.first] = minimum_path[vertex] + to.second;
+        min_queue.push(std::make_pair(minimum_path[to.first], to.first));
+      }
+    }
+  }
+}
+
+int main() {
+  int number_of_maps;
+  std::cin >> number_of_maps;
+  for (int i = 0; i < number_of_maps; ++i) {
+    int number_of_rooms, number_of_labirints;
+    std::cin >> number_of_rooms >> number_of_labirints;
+    used.assign(number_of_rooms + 1, 0);
+    std::fill(path_matrix, path_matrix + kMaxn,
+              std::vector<std::pair<int, int>>(0));
+    for (int j = 0; j < number_of_labirints; ++j) {
+      int start_room, finish_room, length_labirint;
+      std::cin >> start_room >> finish_room >> length_labirint;
+      path_matrix[start_room].push_back({finish_room, length_labirint});
+      path_matrix[finish_room].push_back({start_room, length_labirint});
+    }
+    int room_number;
+    std::cin >> room_number;
+    Dijkstra(room_number);
+    for (int k = 0; k < number_of_rooms; ++k) {
+      std::cout << minimum_path[k] << ' ';
+    }
+    std::cout << '\n';
+  }
+}
